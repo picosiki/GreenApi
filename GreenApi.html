@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GREEN-API Demo</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      padding: 20px;
+      gap: 40px;
+    }
+    .form, .response {
+      display: flex;
+      flex-direction: column;
+    }
+    .form {
+      width: 400px;
+    }
+    .form input, .form .button-group {
+      width: 100%;
+      margin-bottom: 10px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    .form input {
+      padding: 8px;
+    }
+    .form .button-group {
+      display: flex;
+      flex-direction: column;
+    }
+    .form .button-group button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 5px;
+      cursor: pointer;
+    }
+    .form input#message {
+      height: 60px;
+    }
+    .response {
+      flex: 1;
+    }
+    .response h2 {
+      margin-top: 0;
+    }
+    textarea {
+      width: 100%;
+      height: 660px;
+      font-family: monospace;
+      font-size: 14px;
+      padding: 10px;
+      resize: none;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <div class="form">
+    <input type="text" id="apiUrl" placeholder="API Base URL (например, https://api.green-api.com)" value="https://api.green-api.com">
+    <input type="text" id="idInstance" placeholder="idInstance" value="7777">
+    <input type="text" id="apiTokenInstance" placeholder="apiTokenInstance" value="123456">
+
+    <div class="button-group">
+      <button onclick="getSettings()">getSettings</button>
+    </div>
+
+    <div class="button-group">
+      <button onclick="getStateInstance()">getStateInstance</button>
+    </div>
+
+    <input type="text" id="chatId" placeholder="Phone number (e.g. 77771234567)" value="77771234567">
+    <input type="text" id="message" placeholder="Message" value="hello world!">
+
+    <div class="button-group">
+      <button onclick="sendMessage()">sendMessage</button>
+    </div>
+
+    <input type="text" id="fileChatId" placeholder="Phone number (e.g. 77771234567)" value="77771234567">
+    <input type="text" id="fileUrl" placeholder="File URL" value="https://mysite">
+
+    <div class="button-group">
+      <button onclick="sendFileByUrl()">sendFileByUrl</button>
+    </div>
+  </div>
+
+  <div class="response">
+    <h2>Ответ:</h2>
+    <textarea id="response" readonly>{"idMessage":"fsg64874gds"}</textarea>
+  </div>
+
+  <script>
+    function getAuthData() {
+      return {
+        apiUrl: document.getElementById('apiUrl').value,
+        idInstance: document.getElementById('idInstance').value,
+        apiTokenInstance: document.getElementById('apiTokenInstance').value
+      };
+    }
+
+    function updateResponse(data) {
+      document.getElementById('response').value = JSON.stringify(data, null, 2);
+    }
+
+    async function getSettings() {
+      const { apiUrl, idInstance, apiTokenInstance } = getAuthData();
+      const res = await fetch(`${apiUrl}/waInstance${idInstance}/getSettings/${apiTokenInstance}`);
+      updateResponse(await res.json());
+    }
+
+    async function getStateInstance() {
+      const { apiUrl, idInstance, apiTokenInstance } = getAuthData();
+      const res = await fetch(`${apiUrl}/waInstance${idInstance}/getStateInstance/${apiTokenInstance}`);
+      updateResponse(await res.json());
+    }
+
+    async function sendMessage() {
+      const { apiUrl, idInstance, apiTokenInstance } = getAuthData();
+      const chatId = document.getElementById('chatId').value + '@c.us';
+      const message = document.getElementById('message').value;
+      const res = await fetch(`${apiUrl}/waInstance${idInstance}/sendMessage/${apiTokenInstance}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chatId, message })
+      });
+      updateResponse(await res.json());
+    }
+
+    async function sendFileByUrl() {
+      const { apiUrl, idInstance, apiTokenInstance } = getAuthData();
+      const chatId = document.getElementById('fileChatId').value + '@c.us';
+      const urlFile = document.getElementById('fileUrl').value;
+      const fileName = urlFile.split('/').pop() || 'file';
+
+      const res = await fetch(`${apiUrl}/waInstance${idInstance}/sendFileByUrl/${apiTokenInstance}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chatId, urlFile, fileName })
+      });
+      updateResponse(await res.json());
+    }
+  </script>
+</body>
+</html>
